@@ -4,7 +4,8 @@ import {BrowserRouter,Routes,Route,Link,useNavigate,useLocation} from 'react-rou
 import {Home,FileText,Search,User,LogOut,LayoutDashboard,Building2,Menu,ShieldCheck,BrainCircuit,ArrowRight,CheckCircle,Clock,AlertTriangle} from 'lucide-react'
 import {BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,PieChart,Pie,Cell} from 'recharts'
 
-const API=import.meta.env.VITE_API_URL||'http://localhost:8000/api/v1'
+const API_ROOT=(import.meta.env.VITE_API_URL||'http://localhost:8000').replace(/\/+$/,'')
+const API=API_ROOT.endsWith('/api/v1')?API_ROOT:`${API_ROOT}/api/v1`
 const client=axios.create({baseURL:API})
 client.interceptors.request.use(c=>{const t=localStorage.getItem('token');if(t)c.headers.Authorization=`Bearer ${t}`;return c})
 const districts=['Thiruvananthapuram','Kollam','Pathanamthitta','Alappuzha','Kottayam','Idukki','Ernakulam','Thrissur','Palakkad','Malappuram','Kozhikode','Wayanad','Kannur','Kasaragod']
