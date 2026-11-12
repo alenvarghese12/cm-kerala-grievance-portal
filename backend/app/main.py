@@ -1,4 +1,8 @@
-import os, uuid, shutil, json, re
+import os
+import ssl
+from pathlib import Path
+import uuid, shutil, json, re
+import ssl
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
@@ -7,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import (create_engine, Column, Integer, String, Text, DateTime,Boolean, ForeignKey, Enum, func, text, and_)
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
 from pydantic import BaseModel, EmailStr, Field
 from jose import jwt, JWTError
@@ -20,7 +25,9 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 load_dotenv(BASE_DIR / ".env")
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:password@localhost:3307/cm_kerala_portal")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not configured")
 SECRET_KEY = os.getenv("SECRET_KEY", "CHANGE_THIS_DEVELOPMENT_SECRET_KEY")
 ALGORITHM = "HS256"
 TOKEN_MINUTES = 60 * 12
@@ -33,8 +40,19 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 print("Groq key loaded:", bool(GROQ_API_KEY))
 print("Groq model:", GROQ_MODEL)
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=3600)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+database_url = make_url(DATABASE_URL)
+ssl_ca = os.getenv("DB_SSL_CA")
+connect_args = {}
+if ssl_ca or database_url.host not in {"localhost", "127.0.0.1", "::1"}:
+    connect_args["ssl"] = ssl.create_default_context(cafile=ssl_ca)
+
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=300,
+    connect_args=connect_args
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 password_hash = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
