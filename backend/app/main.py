@@ -172,8 +172,18 @@ def serialize_g(g, db):
       "history":[{"old_status":h.old_status,"new_status":h.new_status,"remarks":h.remarks,"actor_id":h.actor_id,"created_at":h.created_at.isoformat()} for h in hist]}
 
 app=FastAPI(title="CM Kerala Grievance Portal API",version="1.0.0",description="Recruitment prototype API. Not an official government service.")
-origins=[x.strip() for x in os.getenv("FRONTEND_ORIGINS","http://localhost:5173").split(",")]
-app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=True,allow_methods=["*"],allow_headers=["*"])
+origins=[
+    "http://localhost:5173",
+    "https://cm-kerala-grievance-portal-mu.vercel.app",
+    *[x.strip() for x in os.getenv("FRONTEND_ORIGINS", "").split(",") if x.strip()],
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
+)
 app.mount("/uploads",StaticFiles(directory=str(UPLOAD_DIR)),name="uploads")
 
 @app.on_event("startup")
