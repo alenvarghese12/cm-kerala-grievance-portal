@@ -1,0 +1,7 @@
+flowchart TD
+ A[React Frontend] -->|REST + JWT| B[FastAPI Backend]
+ B --> C[Authentication and RBAC]
+ B --> D[SQLAlchemy]
+ D --> E[(MySQL)]
+ B --> F[Groq LLM API]
+ B --> G[Attachment Storage]

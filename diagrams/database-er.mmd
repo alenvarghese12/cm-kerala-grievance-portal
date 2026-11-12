@@ -1,0 +1,6 @@
+erDiagram
+ USERS ||--o{ GRIEVANCES : submits
+ DEPARTMENTS ||--o{ GRIEVANCES : receives
+ GRIEVANCES ||--o{ GRIEVANCE_HISTORY : has
+ GRIEVANCES ||--o{ ATTACHMENTS : has
+ GRIEVANCES ||--o| CITIZEN_FEEDBACK : receives
